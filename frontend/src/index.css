@@ -1,0 +1,132 @@
+/* Import font chữ hiện đại */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Hệ font chữ cao cấp */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  /* Bảng màu tối (Dark Mode) */
+  color-scheme: dark light;
+  --bg-color: #000000;
+  --card-bg: #1c1c1e;
+  --text-main: rgba(255, 255, 255, 0.94);
+  --accent-color: #0071e3; /* Xanh Apple */
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  color: var(--text-main);
+  background-color: var(--bg-color);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Cuộn trang mượt mà */
+  scroll-behavior: smooth;
+}
+
+/* Kiểu dáng cho Link */
+a {
+  font-weight: 600;
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+a:hover {
+  opacity: 0.8;
+  filter: brightness(1.2);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Xóa bỏ flex center ở body để trang web hiển thị từ trên xuống dưới chuẩn hơn */
+  display: block; 
+  overflow-x: hidden;
+}
+
+/* Tiêu đề mạnh mẽ */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 3.5rem; }
+
+/* Nút bấm (Button) hiệu ứng Apple */
+button {
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  padding: 0.8em 1.6em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  background-color: var(--card-bg);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  background-color: #2c2c2e;
+  border-color: var(--accent-color);
+}
+
+/* Hiệu ứng co lại khi nhấn vào nút */
+button:active {
+  transform: scale(0.96);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Lớp kính mờ (Glassmorphism) - Dùng cho Card hoặc Navbar */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tùy chỉnh chế độ Sáng (Light Mode) */
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg-color: #f5f5f7;
+    --card-bg: #ffffff;
+    --text-main: #1d1d1f;
+    --border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  button {
+    background-color: #ffffff;
+    color: #1d1d1f;
+  }
+  
+  button:hover {
+    background-color: #f5f5f7;
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Hiệu ứng mờ dần cho toàn bộ trang khi tải */
+.fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

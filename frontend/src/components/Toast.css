@@ -1,0 +1,103 @@
+/* Container bao ngoài đặt ở Profile.jsx hoặc App.jsx */
+.toast-container {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.custom-toast {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 450px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border-left: 6px solid #ccc;
+  animation: slideInFromRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Màu sắc theo từng loại */
+.toast-success { border-left-color: #10b981; }
+.toast-error   { border-left-color: #ef4444; }
+.toast-warning { border-left-color: #f59e0b; }
+.toast-info    { border-left-color: #3b82f6; }
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.toast-icon { font-size: 20px; }
+.toast-text { flex: 1; }
+.toast-message {
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0 5px;
+}
+
+.toast-close-btn:hover { color: #1f2937; }
+
+/* Thanh Progress */
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.toast-progress-bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+}
+
+.toast-success .toast-progress-bar { background: #10b981; }
+.toast-error .toast-progress-bar   { background: #ef4444; }
+.toast-warning .toast-progress-bar { background: #f59e0b; }
+.toast-info .toast-progress-bar    { background: #3b82f6; }
+
+/* Hiệu ứng bay vào */
+@keyframes slideInFromRight {
+  from { transform: translateX(120%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Hiệu ứng thanh chạy thu nhỏ dần */
+@keyframes progress-animation {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 480px) {
+  .toast-container {
+    right: 15px;
+    left: 15px;
+    top: 15px;
+  }
+  .custom-toast { min-width: auto; width: 100%; }
+}
