@@ -34,9 +34,9 @@ const Locgin = () => {
                 }, 1000);
             }
         } catch (error) {
-            // Xử lý lỗi từ Backend (401, 404, 500...)
+            // Xử lý lỗi từ Backend (401, 404, 500...)  
             const responseData = error.response?.data;
-
+            
             // Trường hợp 1: Tài khoản chưa xác thực (Mã 401 + errorCode 2)
             if (responseData?.errorCode === 2) {
                 setToast({ message: 'Tài khoản chưa xác thực! Đang chuyển đến trang xác nhận OTP...', type: 'error' });

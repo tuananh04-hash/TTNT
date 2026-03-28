@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const { getallUsers, getallProducts } = require('../services/CRUDservices');
 const transporter = require('../config/mailer');
+const jwt = require('jsonwebtoken'); 
 // Helper function: Format kết quả trả về thống nhất
 const sendResponse = (res, statusCode, message, data = null) => {
     return res.status(statusCode).json({
@@ -481,41 +482,75 @@ const getProductsHome = async (req, res) => {
 
 // =========================================
 // VII. XÁC THỰC (AUTH)
-// =========================================
+
 
 const bcrypt = require('bcrypt');
 
 const locgin = async (req, res) => {
     const { email, password } = req.body;
+    
     try {
-        // Bạn đang đặt tên là [results] ở đây
+        // 2. Kiểm tra sự tồn tại của Email
         const [results] = await db.query('SELECT * FROM Users WHERE email = ?', [email]);
         
-        // SỬA TẠI ĐÂY: Đổi users.length thành results.length
         if (results.length === 0) {
-            return res.status(401).json({ errorCode: 1, message: "Email không tồn tại!" });
+            return res.status(401).json({ 
+                errorCode: 1, 
+                message: "Email không tồn tại trong hệ thống!" 
+            });
         }
 
-        // SỬA TẠI ĐÂY: Đổi users[0] thành results[0]
         const user = results[0];
 
-        // Tiếp tục so sánh mật khẩu bằng bcrypt
+        // 3. So sánh mật khẩu băm (hashed password)
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ errorCode: 1, message: "Mật khẩu không chính xác!" });
+            return res.status(401).json({ 
+                errorCode: 1, 
+                message: "Mật khẩu bạn nhập không chính xác!" 
+            });
         }
 
-        // Kiểm tra xác thực OTP (is_verified)
+        // 4. Kiểm tra trạng thái xác thực (OTP)
         if (user.is_verified === 0) {
-            return res.status(401).json({ errorCode: 2, message: "Tài khoản chưa xác thực OTP!" });
+            return res.status(401).json({ 
+                errorCode: 2, 
+                message: "Tài khoản chưa xác thực OTP! Vui lòng kiểm tra email." 
+            });
         }
 
+        // 5. TẠO TOKEN (BƯỚC QUAN TRỌNG NHẤT)
+        // Payload: Chứa thông tin cơ bản của user (không để mật khẩu ở đây)
+        const payload = { 
+            id: user.id, 
+            email: user.email, 
+            role: user.role 
+        };
+
+    
+        const secretKey = "TEN_BI_MAT_CUA_BAN_123"; 
+
+        const token = jwt.sign(payload, secretKey, { 
+            expiresIn: '24h' // Chìa khóa có hiệu lực trong 24 giờ
+        });
+
+        // 6. Xóa mật khẩu trước khi gửi dữ liệu về Frontend để bảo mật
         delete user.password;
-        return res.status(200).json({ errorCode: 0, message: "Đăng nhập thành công", data: user });
+
+        // 7. Trả về kết quả thành công kèm TOKEN
+        return res.status(200).json({ 
+            errorCode: 0, 
+            message: "Đăng nhập thành công", 
+            token: token, // <--- Frontend sẽ nhận cái này
+            data: user 
+        });
 
     } catch (error) { 
-        console.error("Lỗi Login:", error); // Dòng này giúp bạn thấy lỗi ở terminal
-        return res.status(500).json({ errorCode: 1, message: "Lỗi server nội bộ" }); 
+        console.error("Lỗi Login Server:", error); 
+        return res.status(500).json({ 
+            errorCode: 1, 
+            message: "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau!" 
+        }); 
     }
 };
 
@@ -676,24 +711,20 @@ const updateProfile = async (req, res) => {
 };
 const getHomeData = async (req, res) => {
     try {
-        // 1. Lấy 4 sản phẩm mới nhất
+        // 1. Lấy 4 sản phẩm mới nhất (dựa trên ID hoặc ngày tạo)
         const [newProducts] = await db.query(
             'SELECT * FROM products ORDER BY id DESC LIMIT 4'
         );
 
-        // 2. Lấy 4 sản phẩm HOT (Sửa lại câu JOIN để tránh lỗi Group By)
+        // 2. Lấy 4 sản phẩm HOT (Bán chạy nhất - đếm từ bảng order_items)
         const [hotProducts] = await db.query(`
-            SELECT p.*, COALESCE(SUM(oi.quantity), 0) as total_sold 
+            SELECT p.*, SUM(oi.quantity) as total_sold 
             FROM products p
             LEFT JOIN order_items oi ON p.id = oi.product_id
-            GROUP BY p.id, p.name, p.price, p.image, p.description, p.stock, p.category_id, p.brand_id
-            ORDER BY total_sold DESC, p.id DESC
+            GROUP BY p.id
+            ORDER BY total_sold DESC
             LIMIT 4
         `);
-
-        // Log ra để kiểm tra xem có dữ liệu không
-        console.log(">>> Check New Products:", newProducts.length);
-        console.log(">>> Check Hot Products:", hotProducts.length);
 
         return res.status(200).json({
             errorCode: 0,
@@ -703,12 +734,8 @@ const getHomeData = async (req, res) => {
             }
         });
     } catch (error) {
-        // Log chi tiết lỗi ra Terminal để Tuấn Anh xem
-        console.error("❌ Lỗi SQL chi tiết tại getHomeData:", error.message);
-        return res.status(500).json({ 
-            errorCode: 1, 
-            message: "Lỗi truy vấn Database: " + error.message 
-        });
+        console.error("Lỗi getHomeData:", error);
+        return res.status(500).json({ errorCode: 1, message: "Lỗi server" });
     }
 };
 // --- LẤY DANH SÁCH ĐÁNH GIÁ ---
